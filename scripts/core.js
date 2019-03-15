@@ -10,10 +10,11 @@ var BootScene = new Phaser.Class({
     preload:function()
     {
 
+        this.load.spritesheet('robot', 'assets/robot.png',{frameWidth:50, frameHeight:60});
         this.load.image('tiles', 'assets/set.png');
         this.load.tilemapTiledJSON('map', 'assets/js1.json');
-        //this.load.image('hero', 'assets/oo.JPG');
-        this.load.spritesheet('hero', 'assets/derter4.png', { frameWidth: 50, frameHeight: 60});
+        //this.load.image('hero', 'assets/oo.JPG'); 50 60
+        this.load.spritesheet('hero', 'assets/derter5.png', { frameWidth: 50, frameHeight: 60});
         this.load.image('bullet','assets/bullet.png')
     },
 
@@ -47,25 +48,54 @@ var WorldScene = new Phaser.Class({
         var box = map.createStaticLayer('L3', tileset, 0, 0);
         //PLAYER
         this.player = this.physics.add.sprite(50,100,'hero');
+        this.player.setScale(1.5);
         this.player.setCollideWorldBounds(true);
-        //
-        //this.player.animations.add('front',[1,2],1,true);
+        //ENEMIES
+
+        this.enemy = this.add.group
+        ({
+            key:'robot',
+            repeat:0,
+            setXY:{
+              x:500,
+              y:70,
+              stepX:80,
+              stepY:20
+            }
+
+        });
+
+
+
         this.anims.create({
           key: 'down',
-          frames: this.anims.generateFrameNumbers('hero', { start: 1, end: 6 }),
+          frames: this.anims.generateFrameNumbers('hero', { start: 8, end: 13}),
           frameRate: 15,
           repeat: -1
         });
 
         this.anims.create({
-          key: 'stay',
-          frames: [{key:'hero', frame:0}],
-          frameRate: 15
+          key: 'up',
+          frames: this.anims.generateFrameNumbers('hero', { start: 14, end: 19 }),
+          frameRate: 15,
+          repeat: -1
+        });
+
+        this.anims.create({
+          key: 'left',
+          frames: this.anims.generateFrameNumbers('hero', { start: 4, end: 7 }),
+          frameRate: 10,
+          repeat: -1
+        });
+
+        this.anims.create({
+          key: 'right',
+          frames: this.anims.generateFrameNumbers('hero', { start: 0, end: 3 }),
+          frameRate: 10,
+          repeat: -1
         });
 
 
-
-        //this.physics.arcade.enable(player);
         //
         this.physics.world.bounds.width = map.widthInPixels;
         this.physics.world.bounds.height = map.heightInPixels;
@@ -90,8 +120,23 @@ var WorldScene = new Phaser.Class({
     update:function()
     {
 
+
       this.player.body.setVelocity(0);
-    //  this.player.anims.play('stay', true);
+
+      var enemies = this.enemy.getChildren();
+      var numEnemies = enemies.length;
+
+      for(let i = 0; i < numEnemies; i++)
+      {
+        //game.physics.collide(this.player, enemies[i], test);
+        //enemies[i].y+=0.5;
+        if(Phaser.Geom.Intersects.RectangleToRectangle(this.player.getBounds(), enemies[i].getBounds()))
+        {
+          this.cameras.main.shake(400,0.02);
+        }
+      }
+
+
       //horizontal
       if(this.cursors.left.isDown)
       {
@@ -102,6 +147,7 @@ var WorldScene = new Phaser.Class({
       {
         this.player.body.setVelocityX(180);
       }
+
       //vertical
       if(this.cursors.up.isDown)
       {
@@ -110,17 +156,35 @@ var WorldScene = new Phaser.Class({
 
       else if(this.cursors.down.isDown)
       {
-
         this.player.body.setVelocityY(180);
-        this.player.anims.play('down', true)
       }
 
-
-
-
-
+      //animations
+      if (this.cursors.left.isDown)
+      {
+        this.player.anims.play('left', true);
+      }
+        else if (this.cursors.right.isDown)
+      {
+        this.player.anims.play('right', true);
+      }
+        else if (this.cursors.up.isDown)
+      {
+        this.player.anims.play('up', true);
+      }
+        else if (this.cursors.down.isDown)
+      {
+        this.player.anims.play('down', true);
+      }
+        else
+      {
+        this.player.anims.stop();
+      }
     }
 })
+
+
+
 
 const config =
     {
